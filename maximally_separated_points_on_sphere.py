@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+import argparse
 from math import sqrt, sin, cos, pi
 import random
-import sys
 from typing import Any, List
 
 
@@ -52,6 +52,9 @@ class PointOnUnitSphere:
                  (-sin(other.phi) * sin(other.theta) +
                   sin(self.phi) * sin(self.theta)) ** 2)))
 
+    def homogeneous_coordinates(self) -> str:
+        return '[1, {:.3}, {:.3}, {:.3}]'.format(self.x(), self.y(), self.z())
+
     def __str__(self) -> str:
         return '({:.3}, {:.3}, {:.3})'.format(self.x(), self.y(), self.z())
 
@@ -86,24 +89,45 @@ def step(points: List[PointOnUnitSphere], gamma: float) -> List[PointOnUnitSpher
     return new_points
 
 
-def find_equidistant_points_on_sphere(number_of_points: int) -> List[PointOnUnitSphere]:
+def find_equidistant_points_on_sphere(number_of_points: int,
+                                      verbose: bool=False) -> List[PointOnUnitSphere]:
     points = [random_point() for _ in range(number_of_points)]
     gamma = 0.1
     for _ in range(1000):
-        print('{:.6}'.format(distance(points)))
+        if verbose:
+            print('{:.6}'.format(distance(points)))
         points = step(points, gamma)
     gamma = 0.01
     for _ in range(1000):
-        print('{:.8}'.format(distance(points)))
+        if verbose:
+            print('{:.8}'.format(distance(points)))
         points = step(points, gamma)
-
 
     return points
 
+
+def parse_args() -> Any:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--verbose', '-v',
+                        dest='verbose',
+                        action='store_true')
+    parser.add_argument('--homogeneous-coordinates', '-H',
+                        dest='homogeneous_coordinates',
+                        action='store_true')
+    parser.add_argument('--number-of-points', '-n',
+                        dest='number_of_points',
+                        required=True,
+                        type=int)
+
+    return parser.parse_args()
+
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        raise Exception('USAGE: equidistance_points_on_sphere.py NUM')
-    points = find_equidistant_points_on_sphere(int(sys.argv[1]))
-    for point in points:
-        print(point)
+    args = parse_args()
+    points = find_equidistant_points_on_sphere(number_of_points=args.number_of_points,
+                                               verbose=args.verbose)
+    if args.homogeneous_coordinates:
+        print('[' + ','.join([point.homogeneous_coordinates() for point in points]) + ']')
+    else:
+        for point in points:
+            print(point)
     print('{:.8}'.format(distance(points)))
