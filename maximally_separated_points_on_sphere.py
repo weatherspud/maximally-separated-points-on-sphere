@@ -118,11 +118,16 @@ def parse_args() -> Any:
                         dest='number_of_points',
                         required=True,
                         type=int)
+    parser.add_argument('--seed', '-s',
+                        dest='seed',
+                        type=int)
 
     return parser.parse_args()
 
 if __name__ == '__main__':
     args = parse_args()
+    if args.seed is not None:
+        random.seed(args.seed)
     points = find_equidistant_points_on_sphere(number_of_points=args.number_of_points,
                                                verbose=args.verbose)
     if args.homogeneous_coordinates:
